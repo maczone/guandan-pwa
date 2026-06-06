@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a6b3c"/>
+      <stop offset="100%" style="stop-color:#0d4a28"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="32" fill="url(#bg)"/>
+  <!-- 王炸标志 -->
+  <text x="96" y="70" text-anchor="middle" font-size="60">🃏</text>
+  <text x="96" y="130" text-anchor="middle" font-size="60">🃏</text>
+  <!-- 掼蛋文字 -->
+  <rect x="36" y="148" width="120" height="28" rx="14" fill="rgba(255,215,0,0.9)"/>
+  <text x="96" y="168" text-anchor="middle" font-size="16" font-weight="700" fill="#333">掼蛋</text>
+  <!-- 四角花色 -->
+  <text x="26" y="36" font-size="20" fill="rgba(255,255,255,0.3)">♠</text>
+  <text x="166" y="36" font-size="20" fill="rgba(255,255,255,0.3)" text-anchor="end">♥</text>
+  <text x="26" y="176" font-size="20" fill="rgba(255,255,255,0.3)">♣</text>
+  <text x="166" y="176" font-size="20" fill="rgba(255,255,255,0.3)" text-anchor="end">♦</text>
+</svg>
