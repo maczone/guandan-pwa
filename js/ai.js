@@ -1,6 +1,6 @@
 /**
- * ai.js v3 - 掼蛋AI（增强版）
- * 使用记牌器、阶段感知、炸弹管理、团队协作
+ * ai.js v2 - 掼蛋AI（竞赛规则版）
+ * 支持：借风感知、炸弹升级策略、报牌感知
  */
 
 class AIPlayer {
@@ -12,8 +12,8 @@ class AIPlayer {
     this.isTeammate = (playerIdx === game.teammateIdx);
     this.wildCards = this.hand.filter(c => c.isWild);
     this.normalCards = this.hand.filter(c => !c.isWild);
-    this.memory = game.memory; // 记牌器
-    this.stats = game.stats;   // 统计
+    this.memory = game.memory;
+    this.stats = game.stats;
   }
 
   decide() {
@@ -22,7 +22,7 @@ class AIPlayer {
     this.wildCards = this.hand.filter(c => c.isWild);
     this.normalCards = this.hand.filter(c => !c.isWild);
 
-    if (state.isLeading) return this._decideLeading();
+    if (state.isLeading || state.borrowWind) return this._decideLeading();
     return this._decideRespond(state.lastPlay);
   }
 
@@ -31,9 +31,9 @@ class AIPlayer {
     const total = 108;
     const played = this.memory.playedCards.length;
     const ratio = played / total;
-    if (ratio < 0.3) return 'early';    // 前期
-    if (ratio < 0.6) return 'mid';      // 中期
-    return 'late';                       // 后期
+    if (ratio < 0.3) return 'early';
+    if (ratio < 0.6) return 'mid';
+    return 'late';
   }
 
   /** 自己剩余手牌阶段 */
@@ -53,12 +53,10 @@ class AIPlayer {
 
     // 残局：牌少时出大牌争头游
     if (hPhase === 'critical' || hPhase === 'thin') {
-      const bombs = allPlays.filter(p => p.type.startsWith('bomb'));
+      const bombs = allPlays.filter(p => p.type.startsWith('bomb') || p.type === HAND_TYPES.BOMB_JOKER_FOUR);
       if (bombs.length > 0 && this.hand.length <= 4) {
-        // 快出完了，直接出炸弹收尾
         return { action: 'play', cards: [...new Set(bombs.map(b => b.cards).flat())].slice(0, this.hand.length) };
       }
-      // 出最大的单张或对子
       const singles = allPlays.filter(p => p.type === HAND_TYPES.SINGLE && !p.cards[0].isWild);
       if (singles.length > 0) {
         singles.sort((a, b) => RANK_POWER[b.mainRank] - RANK_POWER[a.mainRank]);
@@ -68,13 +66,11 @@ class AIPlayer {
 
     // 前期/中期：出组合牌
     if (hPhase === 'fat' || phase === 'early') {
-      // 三带一/三带对优先
       const triples = allPlays.filter(p =>
         p.type === HAND_TYPES.TRIPLE_PLUS_ONE || p.type === HAND_TYPES.TRIPLE_PLUS_PAIR
       );
       if (triples.length > 0) {
         triples.sort((a, b) => RANK_POWER[a.mainRank] - RANK_POWER[b.mainRank]);
-        // 选不带逢人配的优先
         triples.sort((a, b) => a.cards.filter(c => c.isWild).length - b.cards.filter(c => c.isWild).length);
         return { action: 'play', cards: triples[0].cards };
       }
@@ -128,9 +124,8 @@ class AIPlayer {
     const lastHand = lastPlay.hand;
     const hPhase = this._handPhase();
 
-    // 队友出的 → 不压
+    // 队友出的 → 不压（除非队友快出完了或者接风）
     if (lastPlay.playerIdx === this.game.teammateIdx) {
-      // 除非队友只剩1张而且自己牌多要救，否则过
       const tmHand = this.game.getHand(this.game.teammateIdx);
       if (tmHand && tmHand.length > 2) {
         return { action: 'pass' };
@@ -140,7 +135,7 @@ class AIPlayer {
     // 找能打过的
     const beatingPlays = allPlays.filter(p => HandDetector.canBeat(p, lastHand));
 
-    // 打不过 → 考虑炸弹
+    // 打不过 → 考虑炸弹（竞赛规则：四大天王 > 六炸+ > 同花顺 > 五炸 > 四炸）
     if (beatingPlays.length === 0) {
       return this._considerBomb(lastPlay);
     }
@@ -159,15 +154,16 @@ class AIPlayer {
       const wildUsed = p.cards.filter(c => c.isWild).length;
       cost += wildUsed * 10;
 
-      // 炸弹是战略资源
-      if (p.type.startsWith('bomb')) {
+      // 炸弹是战略资源（竞赛规则：区分四大天王、同花顺、普通炸弹）
+      if (p.type === HAND_TYPES.BOMB_JOKER_FOUR) {
+        cost += 50; // 四大天王尽量保留
+      } else if (p.type.startsWith('bomb') || p.type === HAND_TYPES.STRAIGHT_FLUSH) {
         cost += 25;
-        // 但对方快赢时炸弹价值更高
         if (lastPlayerCards <= 3) cost -= 30;
       }
       if (p.type === HAND_TYPES.STRAIGHT_FLUSH) cost += 15;
 
-      // 手牌紧张时，大牌权重降低（要用出去）
+      // 手牌紧张时，大牌权重降低
       if (hPhase === 'critical') cost *= 0.5;
 
       return { play: p, cost };
@@ -183,13 +179,14 @@ class AIPlayer {
     return { action: 'play', cards: scored[0].play.cards };
   }
 
-  /** ─── 炸弹决策 ─── */
+  /** ─── 炸弹决策（竞赛规则版） ─── */
   _considerBomb(lastPlay) {
     const allPlays = CardUtils.findPlays(this.hand, this.levelRank);
     const bombs = allPlays.filter(p =>
       p.type === HAND_TYPES.BOMB_4 || p.type === HAND_TYPES.BOMB_5 ||
       p.type === HAND_TYPES.BOMB_6 || p.type === HAND_TYPES.BOMB_7 ||
-      p.type === HAND_TYPES.BOMB_8 || p.type === HAND_TYPES.BOMB_JOKER
+      p.type === HAND_TYPES.BOMB_8 || p.type === HAND_TYPES.BOMB_JOKER ||
+      p.type === HAND_TYPES.BOMB_JOKER_FOUR || p.type === HAND_TYPES.STRAIGHT_FLUSH
     );
 
     if (bombs.length === 0) return { action: 'pass' };
@@ -202,15 +199,14 @@ class AIPlayer {
 
     // 必须炸的情形
     const mustBomb =
-      (lastPlayerCards <= 2) ||           // 对手只剩2张
-      (myCards <= 4 && lastPlayerCards > myCards) || // 自己快出完
-      (tmCards <= 2 && isOppLast) ||       // 队友要出完了
-      (bombs.length >= 2 && myCards <= 6); // 炸弹多牌少
+      (lastPlayerCards <= 2) ||
+      (myCards <= 4 && lastPlayerCards > myCards) ||
+      (tmCards <= 2 && lastPlay.playerIdx !== this.game.teammateIdx) ||
+      (bombs.length >= 2 && myCards <= 6);
 
     if (mustBomb) {
       bombs.sort((a, b) => HAND_TYPE_POWER[a.type] - HAND_TYPE_POWER[b.type]);
       const best = bombs[0];
-      // 记录炸弹
       if (this.stats) this.stats.recordBomb();
       return { action: 'play', cards: best.cards };
     }

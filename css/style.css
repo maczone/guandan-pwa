@@ -78,6 +78,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
 
 .table-center {
   flex: 1; display: flex; align-items: center; justify-content: center; min-height: 72px;
+  position: relative;
 }
 
 .play-hint { color: rgba(255,255,255,0.25); font-size: 13px; }
@@ -289,3 +290,139 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
   .cjoker { font-size: 18px; }
   .hand-row { gap: 3px; }
 }
+
+/* ═══ v2 竞赛规则 UI ═══ */
+
+/* A必打失败标记 */
+.a-fail-badge {
+  font-size: 9px; margin-left: 2px; opacity: 0.8;
+}
+
+/* 报牌横幅 */
+.declaration-banner {
+  background: linear-gradient(90deg, rgba(255,215,0,0.2), rgba(255,107,53,0.2));
+  color: var(--gold); text-align: center; font-size: 12px; font-weight: 700;
+  padding: 3px 0; flex-shrink: 0; animation: pulse 1.5s infinite;
+  border-bottom: 1px solid rgba(255,215,0,0.15);
+}
+
+/* 对手报牌标签 */
+.declaration-tag {
+  font-size: 9px; background: rgba(255,215,0,0.15); color: var(--gold);
+  padding: 1px 5px; border-radius: 8px; margin-left: 4px; font-weight: 600;
+}
+
+/* 借风提示 */
+.borrow-wind-hint {
+  position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+  background: rgba(100,200,255,0.2); color: #80d8ff; font-size: 11px; font-weight: 700;
+  padding: 2px 12px; border-radius: 10px; white-space: nowrap;
+  border: 1px solid rgba(100,200,255,0.3); animation: pulse 1.5s infinite;
+}
+
+.borrow-tag {
+  background: rgba(100,200,255,0.2); color: #80d8ff; font-size: 10px;
+  padding: 1px 8px; border-radius: 8px; font-weight: 600; margin-left: 4px;
+}
+
+/* 贡牌/还牌阶段 */
+.tribute-phase {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 16px; gap: 12px;
+}
+.tribute-header {
+  font-size: 22px; font-weight: 800; color: var(--gold); text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.tribute-instruction {
+  font-size: 14px; color: var(--text-light); opacity: 0.8;
+}
+.tribute-hand {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; padding: 8px;
+  background: rgba(255,255,255,0.05); border-radius: var(--radius); max-width: 320px;
+}
+.tribute-hand .card.disabled {
+  opacity: 0.35; cursor: not-allowed;
+}
+
+/* 最后出牌面板增强 */
+.last-play {
+  background: rgba(0,0,0,0.15); border-radius: 8px; padding: 6px 10px;
+  text-align: center;
+}
+
+/* ═══ 竞赛规则面板 ═══ */
+.rules-panel {
+  background: rgba(0,0,0,0.92); color: var(--text-light);
+  flex-direction: column; max-height: 70vh; overflow: hidden;
+  border-bottom: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;
+}
+.rp-title {
+  font-size: 15px; font-weight: 800; text-align: center; padding: 10px 0 4px;
+  color: var(--gold); flex-shrink: 0;
+}
+.rp-scroll {
+  overflow-y: auto; padding: 4px 12px 8px; flex: 1; scrollbar-width: thin;
+}
+.rp-section {
+  margin-bottom: 8px; padding: 6px 8px;
+  background: rgba(255,255,255,0.04); border-radius: 8px;
+  border-left: 2px solid var(--accent);
+}
+.rp-h {
+  font-size: 12px; font-weight: 700; color: var(--gold); margin-bottom: 3px;
+}
+.rp-b {
+  font-size: 11px; line-height: 1.6; color: rgba(255,255,255,0.8);
+}
+.rp-b b { color: #fff; }
+
+/* ═══ 欢迎模态框 ═══ */
+.welcome-box {
+  max-width: 340px; padding: 24px 20px; position: relative;
+}
+.welcome-icon { font-size: 48px; margin-bottom: 4px; }
+.welcome-rules {
+  display: flex; flex-direction: column; gap: 5px;
+  background: #f5f5f5; border-radius: 10px; padding: 10px 12px; margin: 8px 0;
+  text-align: left;
+}
+.wr-item {
+  display: flex; align-items: center; gap: 8px; font-size: 12px; color: #333;
+}
+.wr-icon { font-size: 16px; width: 20px; text-align: center; }
+.wr-item b { color: var(--accent); }
+.welcome-buttons {
+  display: flex; flex-direction: column; gap: 4px; margin-top: 4px;
+}
+.welcome-close {
+  position: absolute; top: 6px; right: 8px; font-size: 18px; color: #999;
+}
+.welcome-close:hover { color: #333; }
+
+/* ═══ 局末/终局画面 ═══ */
+.round-end-screen {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 24px 20px; text-align: center; gap: 8px;
+}
+.round-end-screen .re-icon { font-size: 56px; }
+.round-end-screen .re-result { font-size: 20px; font-weight: 800; color: var(--gold); margin: 4px 0; }
+.round-end-screen .re-level { font-size: 14px; color: var(--text-light); opacity: 0.7; }
+.round-end-screen .re-level b { color: var(--gold); font-size: 18px; }
+.re-rankings {
+  display: flex; flex-direction: column; gap: 4px; width: 100%; max-width: 240px;
+  background: rgba(0,0,0,0.2); border-radius: 12px; padding: 10px 14px; margin: 6px 0;
+}
+.re-rank-row {
+  display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-light);
+}
+.re-rank-icon { font-size: 18px; width: 24px; text-align: center; }
+.re-rank-name { font-weight: 600; flex: 1; text-align: left; }
+.re-rank-label { opacity: 0.5; font-size: 11px; }
+.re-buttons { margin-top: 8px; }
+.re-stats {
+  display: flex; gap: 16px; justify-content: center; margin: 8px 0;
+  background: rgba(0,0,0,0.15); border-radius: 10px; padding: 10px 16px;
+}
+.re-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.re-stat span { font-size: 10px; color: var(--text-light); opacity: 0.6; }
+.re-stat b { font-size: 18px; color: var(--gold); }

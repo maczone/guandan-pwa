@@ -3,7 +3,7 @@
  * 缓存所有静态资源，实现完全离线运行
  */
 
-const CACHE_NAME = 'guandan-v3';
+const CACHE_NAME = 'guandan-v4';
 
 // 要缓存的所有资源
 const PRECACHE_URLS = [

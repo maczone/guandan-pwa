@@ -120,11 +120,13 @@ const HAND_TYPES = {
   BOMB_6: 'bomb_6',           // 六炸(6同张)
   BOMB_7: 'bomb_7',           // 七炸(7同张)
   BOMB_8: 'bomb_8',           // 八炸(8同张)
-  BOMB_JOKER: 'bomb_joker',   // 王炸(4张王)
+  BOMB_JOKER: 'bomb_joker',   // 王炸(4张王，但非四大天王)
+  BOMB_JOKER_FOUR: 'bomb_joker_four', // 四大天王(4张王，竞赛规则特指)
   INVALID: 'invalid'
 };
 
 // 牌型优先级（数字越大越强）
+// 竞赛规则牌型大小：四大天王 > 六炸+ > 同花顺 > 五炸 > 四炸 > 其他
 const HAND_TYPE_POWER = {
   [HAND_TYPES.SINGLE]: 1,
   [HAND_TYPES.PAIR]: 2,
@@ -139,7 +141,8 @@ const HAND_TYPE_POWER = {
   [HAND_TYPES.BOMB_6]: 11,
   [HAND_TYPES.BOMB_7]: 12,
   [HAND_TYPES.BOMB_8]: 13,
-  [HAND_TYPES.BOMB_JOKER]: 14,
+  [HAND_TYPES.BOMB_JOKER]: 14,   // 4张王(非标准四大天王)
+  [HAND_TYPES.BOMB_JOKER_FOUR]: 15, // 四大天王(最大)
 };
 
 // ─── 牌型检测 ───
@@ -180,9 +183,16 @@ class HandDetector {
       return { type: HAND_TYPES.SINGLE, rank: cards[0].rank, mainRank: cards[0].rank, length: 1, cards: sorted };
     }
 
-    // ===== 王炸 =====
+    // ===== 王炸 / 四大天王 =====
     if (n >= 4 && sorted.every(c => c.isJoker)) {
-      return { type: HAND_TYPES.BOMB_JOKER, rank: 'joker', mainRank: 'joker', length: n, cards: sorted };
+      // 四大天王：恰好两副牌的四张王（2小王+2大王）
+      const bigs = sorted.filter(c => c.rank === 'big').length;
+      const smalls = sorted.filter(c => c.rank === 'small').length;
+      const isFourKings = n === 4 && bigs === 2 && smalls === 2;
+      return {
+        type: isFourKings ? HAND_TYPES.BOMB_JOKER_FOUR : HAND_TYPES.BOMB_JOKER,
+        rank: 'joker', mainRank: 'joker', length: n, cards: sorted
+      };
     }
 
     // ===== 炸弹(4~8同张) =====
@@ -485,10 +495,16 @@ class CardUtils {
       }
     }
 
-    // ─── 王炸 ───
+    // ─── 王炸 / 四大天王 ───
     const jokers = sorted.filter(c => c.isJoker);
     if (jokers.length >= 4) {
-      results.push({ type: HAND_TYPES.BOMB_JOKER, rank: 'joker', mainRank: 'joker', length: jokers.length, cards: jokers });
+      const bigs = jokers.filter(c => c.rank === 'big').length;
+      const smalls = jokers.filter(c => c.rank === 'small').length;
+      const isFourKings = jokers.length === 4 && bigs === 2 && smalls === 2;
+      results.push({
+        type: isFourKings ? HAND_TYPES.BOMB_JOKER_FOUR : HAND_TYPES.BOMB_JOKER,
+        rank: 'joker', mainRank: 'joker', length: jokers.length, cards: jokers
+      });
     }
 
     // ─── 顺子(5张) + 同花顺（含逢人配填补缺位） ───
