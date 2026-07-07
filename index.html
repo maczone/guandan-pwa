@@ -23,6 +23,31 @@
   <script src="js/game.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/app.js"></script>
+
+  <!-- Service Worker 注册：实现离线缓存 -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      // file:// 协议不支持 Service Worker，直接跳过
+      if (location.protocol !== 'file:') {
+        navigator.serviceWorker.register('sw.js')
+          .then(function(reg) {
+            console.log('[PWA] Service Worker 注册成功，作用域:', reg.scope);
+          })
+          .catch(function(err) {
+            console.warn('[PWA] Service Worker 注册失败（离线不影响游戏运行）:', err);
+          });
+      } else {
+        console.log('[PWA] 以 file:// 协议打开，Service Worker 不可用。游戏完全本地运行，无需网络。');
+      }
+    }
+
+    // 离线运行时检测（仅作提示，不影响功能）
+    (function() {
+      if (location.protocol === 'file:' || !navigator.onLine) {
+        console.log('[掼蛋] 离线模式 — 游戏完全本地运行，无需网络连接');
+      }
+    })();
+  </script>
 </head>
 <body>
   <div id="app">

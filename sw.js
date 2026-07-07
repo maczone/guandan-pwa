@@ -1,28 +1,32 @@
 /**
  * sw.js - 掼蛋PWA Service Worker
  * 缓存所有静态资源，实现完全离线运行
+ * 自动适配任意部署路径（/guandan-pwa/、/、本地开发等）
  */
 
-const CACHE_NAME = 'guandan-v4';
+// 自动计算部署基础路径（动态适配 GitHub Pages 子路径等）
+const BASE_PATH = self.location.pathname.replace(/\/[^/]*$/, '/');
 
-// 要缓存的所有资源
+const CACHE_NAME = 'guandan-v5';
+
+// 要缓存的所有资源（使用动态路径）
 const PRECACHE_URLS = [
-  '/guandan-pwa/',
-  '/guandan-pwa/index.html',
-  '/guandan-pwa/manifest.json',
-  '/guandan-pwa/css/style.css',
-  '/guandan-pwa/js/cards.js',
-  '/guandan-pwa/js/rules.js',
-  '/guandan-pwa/js/settings.js',
-  '/guandan-pwa/js/memory.js',
-  '/guandan-pwa/js/stats.js',
-  '/guandan-pwa/js/sound.js',
-  '/guandan-pwa/js/ai.js',
-  '/guandan-pwa/js/game.js',
-  '/guandan-pwa/js/ui.js',
-  '/guandan-pwa/js/app.js',
-  '/guandan-pwa/icons/icon-192.png',
-  '/guandan-pwa/icons/icon-512.png'
+  BASE_PATH,
+  BASE_PATH + 'index.html',
+  BASE_PATH + 'manifest.json',
+  BASE_PATH + 'css/style.css',
+  BASE_PATH + 'js/cards.js',
+  BASE_PATH + 'js/rules.js',
+  BASE_PATH + 'js/settings.js',
+  BASE_PATH + 'js/memory.js',
+  BASE_PATH + 'js/stats.js',
+  BASE_PATH + 'js/sound.js',
+  BASE_PATH + 'js/ai.js',
+  BASE_PATH + 'js/game.js',
+  BASE_PATH + 'js/ui.js',
+  BASE_PATH + 'js/app.js',
+  BASE_PATH + 'icons/icon-192.png',
+  BASE_PATH + 'icons/icon-512.png'
 ];
 
 // 安装：预缓存所有文件
@@ -47,7 +51,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-// 拦截请求：优先从缓存返回
+// 拦截请求：优先从缓存返回，无网络时静默使用缓存
 self.addEventListener('fetch', event => {
   // 只拦截同源请求
   if (event.request.url.startsWith(self.location.origin)) {
@@ -69,8 +73,8 @@ self.addEventListener('fetch', event => {
             });
             return response;
           }).catch(() => {
-            // 离线且没缓存时返回离线页面
-            return caches.match('/guandan-pwa/index.html');
+            // 彻底离线且没缓存时：尝试返回离线首页
+            return caches.match(BASE_PATH + 'index.html');
           });
         })
     );

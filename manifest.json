@@ -2,12 +2,12 @@
   "name": "掼蛋 - AI对战",
   "short_name": "掼蛋",
   "description": "完全离线的掼蛋AI对战游戏",
-  "start_url": "/guandan-pwa/index.html",
+  "start_url": "index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#1a6b3c",
   "theme_color": "#1a6b3c",
-  "scope": "/guandan-pwa/",
+  "scope": ".",
   "categories": ["games", "entertainment"],
   "icons": [
     {
